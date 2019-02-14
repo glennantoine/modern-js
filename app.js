@@ -82,8 +82,10 @@ function removeTask(e){
 //Clear All Tasks
 function clearTasks(e){
   //Clear all html from within ul.collection
+  //Simple/straight-forward but slower method
   //taskList.innerHTML = '';
 
+  //Read the follow link regarding removing dom elements
   //Faster Method (https://jsperf.com/innerhtml-vs-removechild/47)
   while(taskList.firstChild) {
     taskList.removeChild(taskList.firstChild);
@@ -94,6 +96,8 @@ function clearTasks(e){
 function filterTasks(e) {
   const text = e.target.value.toLowerCase();
 
+  //querySelectorAll returns a NodeList that we can iterate over
+  //with a forEach to identify all matching list items
   document.querySelectorAll('.collection-item').forEach(function(task){
     const item = task.firstChild.textContent;
     if(item.toLowerCase().indexOf(text) != -1){
