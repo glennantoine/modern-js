@@ -19,6 +19,8 @@ function loadEventListners() {
   clearBtn.addEventListener('click', clearTasks);
   //Filter Tasks Event
   filter.addEventListener('keyup', filterTasks);
+  //Load Tasks from LocalStorage
+  document.addEventListener('DOMContentLoaded', loadTasks);
 
 }
 
@@ -31,25 +33,13 @@ function addTask(e){
     alert('Please Enter a Task');
   }
 
-  //Creat li element
-  const li = document.createElement('li');
-  //Add Class
-  li.className = 'collection-item';
-  //Create text node and append to li
-  li.appendChild(document.createTextNode(task));
-  //Create new link element
-  const link = document.createElement('a');
-  //Add class
-  link.className = 'delete-item secondary-content';
-  //Add icon html
-  link.innerHTML = '<i class="fa fa-remove"></i>';
-  //Append link to li element
-  li.appendChild(link);
-  //Append li to ul (Task List)
-  taskList.appendChild(li);
+  //Build HTML Element for each task
+  buildTaskItem(task);
+
   //Clear Input field
   taskInput.value = '';
 
+  //Persist task to LocalStorage
   saveTaskToLocalStorage(task);
 
   //Prevent form default behavior 
@@ -74,9 +64,28 @@ function saveTaskToLocalStorage(task){
 
 //Remove Tasks Function
 function removeTask(e){
+  let task;
+
   if(e.target.parentElement.classList.contains('delete-item')){
+    task = e.target.parentElement.parentElement.innerText;
     e.target.parentElement.parentElement.remove();
+    removeTaskFromLocalStorage(task);
   }
+}
+
+function removeTaskFromLocalStorage(task){
+  //Get all tasks from LocalStorage & Convert to Array
+  const taskArr = JSON.parse(localStorage.getItem('tasks'));
+  taskArr.forEach(function(item){
+    if(item === task){
+      taskArr.splice(taskArr.indexOf(item), 1);
+      updateLocalStorage(taskArr);
+    }
+  });
+}
+
+function updateLocalStorage(taskArr){
+  localStorage.setItem('tasks', JSON.stringify(taskArr));
 }
 
 //Clear All Tasks
@@ -90,6 +99,9 @@ function clearTasks(e){
   while(taskList.firstChild) {
     taskList.removeChild(taskList.firstChild);
   }
+
+  //Remove tasks from LocalStorage
+  localStorage.removeItem('tasks');
 }
 
 //Filter Tasks 
@@ -106,4 +118,38 @@ function filterTasks(e) {
       task.style.display = 'none';
     }
   });
+}
+
+function loadTasks(){
+  
+  //Check for tasks in LocalStorage
+  if(localStorage.getItem('tasks') !== null){
+
+    //Read LocalStorage & Convert to an Array
+    const tasksArr = JSON.parse(localStorage.getItem('tasks'));
+    tasksArr.forEach(function(task){
+      buildTaskItem(task);
+    })
+
+  }
+}
+
+function buildTaskItem(task){
+    //Creat li element
+    const li = document.createElement('li');
+    //Add Class
+    li.className = 'collection-item';
+    //Create text node and append to li
+    li.appendChild(document.createTextNode(task));
+    //Create new link element
+    const link = document.createElement('a');
+    //Add class
+    link.className = 'delete-item secondary-content';
+    //Add icon html
+    link.innerHTML = '<i class="fa fa-remove"></i>';
+    //Append link to li element
+    li.appendChild(link);
+    //Append li to ul (Task List)
+    taskList.appendChild(li);
+
 }
